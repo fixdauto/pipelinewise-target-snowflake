@@ -499,6 +499,12 @@ class DbSync:
                 self.logger.info('Loading into %s: %s',
                     self.table_name(stream, False),
                     json.dumps({'inserts': inserts, 'updates': updates, 'size_bytes': size_bytes}))
+            if (inserts + updates) < count:
+                raise Exception(
+                    "Not all data was loaded for {}. ".format(self.table_name(stream, False)),
+                    "Inserted {} rows and updated {} rows, expecting {} rows total. ".format(inserts, updates, count),
+                    "Check that your stage definition does not include the path prefix."
+                )
 
     def primary_key_merge_condition(self):
         """Generate SQL join condition on primary keys for merge SQL statements"""
