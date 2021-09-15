@@ -49,8 +49,10 @@ class S3UploadClient(BaseUploadClient):
         # Generating key in S3 bucket
         bucket = self.connection_config['s3_bucket']
         s3_acl = self.connection_config.get('s3_acl')
+        s3_stage_suffix = self.connection_config.get('s3_stage_suffix', '')
         s3_key_prefix = self.connection_config.get('s3_key_prefix', '')
-        s3_key = "{}pipelinewise_{}_{}_{}".format(s3_key_prefix,
+        s3_key = "{}{}pipelinewise_{}_{}_{}".format(s3_stage_suffix,
+                                                  s3_key_prefix,
                                                   stream,
                                                   datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f"),
                                                   os.path.basename(file))
