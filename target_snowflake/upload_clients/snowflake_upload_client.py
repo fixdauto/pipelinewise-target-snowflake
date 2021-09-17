@@ -29,7 +29,7 @@ class SnowflakeUploadClient(BaseUploadClient):
         with self.dblink.open_connection() as connection:
             connection.cursor().execute(cmd)
 
-        return key
+        return key, key
 
     def delete_object(self, stream: str, key: str) -> None:
         """Delete object form internal snowflake stage"""

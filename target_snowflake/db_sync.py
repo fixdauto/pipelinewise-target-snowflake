@@ -394,10 +394,13 @@ class DbSync:
     def put_to_stage(self, file, stream, count, temp_dir=None):
         """Upload file to snowflake stage"""
         self.logger.info('Uploading %d rows to stage', count)
-        return self.upload_client.upload_file(file, stream, temp_dir)
+        complete_key, stage_relative_key = self.upload_client.upload_file(file, stream, temp_dir)
+        return stage_relative_key
 
     def delete_from_stage(self, stream, s3_key):
         """Delete file from snowflake stage"""
+        s3_stage_suffix = self.connection_config.get('s3_stage_suffix', '')
+        s3_key = s3_stage_suffix + s3_key
         self.logger.info('Deleting %s from stage', format(s3_key))
         self.upload_client.delete_object(stream, s3_key)
 
@@ -420,6 +423,9 @@ class DbSync:
 
         # Get archive s3_bucket from config, or use same bucket if not specified
         archive_bucket = self.connection_config.get('archive_load_files_s3_bucket', source_bucket)
+
+        s3_stage_suffix = self.connection_config.get('s3_stage_suffix', '')
+        s3_source_key = s3_stage_suffix + s3_source_key
 
         # Determine prefix to use in archive s3 bucket
         default_archive_prefix = 'archive'

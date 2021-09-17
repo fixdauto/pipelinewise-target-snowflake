@@ -44,18 +44,18 @@ class S3UploadClient(BaseUploadClient):
                                   region_name=config.get('s3_region_name'),
                                   endpoint_url=config.get('s3_endpoint_url'))
 
-    def upload_file(self, file, stream, temp_dir=None):
+    def upload_file(self, file, stream, temp_dir=None) -> (str, str):
         """Upload file to an external snowflake stage on s3"""
         # Generating key in S3 bucket
         bucket = self.connection_config['s3_bucket']
         s3_acl = self.connection_config.get('s3_acl')
         s3_stage_suffix = self.connection_config.get('s3_stage_suffix', '')
         s3_key_prefix = self.connection_config.get('s3_key_prefix', '')
-        s3_key = "{}{}pipelinewise_{}_{}_{}".format(s3_stage_suffix,
-                                                  s3_key_prefix,
+        stage_relative_key = "{}pipelinewise_{}_{}_{}".format(s3_key_prefix,
                                                   stream,
                                                   datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f"),
                                                   os.path.basename(file))
+        s3_key = s3_stage_suffix + stage_relative_key
 
         self.logger.info('Target S3 bucket: %s, local file: %s, S3 key: %s', bucket, file, s3_key)
 
@@ -92,7 +92,7 @@ class S3UploadClient(BaseUploadClient):
             extra_args = {'ACL': s3_acl} if s3_acl else None
             self.s3_client.upload_file(file, bucket, s3_key, ExtraArgs=extra_args)
 
-        return s3_key
+        return s3_key, stage_relative_key
 
     def delete_object(self, stream: str, key: str) -> None:
         """Delete object from an external snowflake stage on S3"""
