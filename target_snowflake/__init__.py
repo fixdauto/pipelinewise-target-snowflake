@@ -469,18 +469,20 @@ def flush_records(stream: str,
 
     if archive_load_files:
         stream_name_parts = stream_utils.stream_name_to_dict(stream)
-        if 'schema_name' not in stream_name_parts or 'table_name' not in stream_name_parts:
-            raise Exception("Failed to extract schema and table names from stream '{}'".format(stream))
 
-        archive_schema = stream_name_parts['schema_name']
-        archive_table = stream_name_parts['table_name']
         archive_tap = archive_load_files['tap']
+        archive_table = stream_name_parts.get('table_name')
+        archive_schema = stream_name_parts.get('stream_name_parts',
+                                               db_sync.connection_config.get('schema_id'))
+
+        if not archive_schema or not archive_table:
+            raise Exception("Failed to extract schema and table names from stream '{}'. ".format(stream))
 
         archive_metadata = {
             'tap': archive_tap,
             'schema': archive_schema,
             'table': archive_table,
-            'archived-by': 'pipelinewise_target_snowflake'
+            'archived-by': 'pipelinewise_target_snowflake',
         }
 
         if 'column' in archive_load_files:

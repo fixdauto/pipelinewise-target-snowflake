@@ -106,7 +106,6 @@ class S3UploadClient(BaseUploadClient):
         source_bucket, source_key = copy_source.split("/", 1)
         metadata = self.s3_client.head_object(Bucket=source_bucket, Key=source_key).get('Metadata', {})
         metadata.update(target_metadata)
-        metadata = { k: v for k, v in metadata.items() if v is not None }
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy_object
         self.s3_client.copy_object(CopySource=copy_source, Bucket=target_bucket, Key=target_key,
                                    Metadata=metadata, MetadataDirective="REPLACE")
